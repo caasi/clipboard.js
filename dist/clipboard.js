@@ -388,9 +388,10 @@ var ClipboardAction = (function () {
     ClipboardAction.prototype.resolveOptions = function resolveOptions() {
         var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
-        this.action = options.action;
+        // XXX: use traditional setters internally
+        this.setAction(options.action);
         this.emitter = options.emitter;
-        this.target = options.target;
+        this.setTarget(options.target);
         this.text = options.text;
         this.trigger = options.trigger;
 
@@ -403,11 +404,11 @@ var ClipboardAction = (function () {
      */
 
     ClipboardAction.prototype.initSelection = function initSelection() {
-        if (this.text && this.target) {
+        if (this.text && this.getTarget()) {
             throw new Error('Multiple attributes declared, use either "target" or "text"');
         } else if (this.text) {
             this.selectFake();
-        } else if (this.target) {
+        } else if (this.getTarget()) {
             this.selectTarget();
         } else {
             throw new Error('Missing required attributes, use either "target" or "text"');
@@ -463,7 +464,7 @@ var ClipboardAction = (function () {
      */
 
     ClipboardAction.prototype.selectTarget = function selectTarget() {
-        this.selectedText = _select2['default'](this.target);
+        this.selectedText = _select2['default'](this.getTarget());
         this.copyText();
     };
 
@@ -475,7 +476,7 @@ var ClipboardAction = (function () {
         var succeeded = undefined;
 
         try {
-            succeeded = document.execCommand(this.action);
+            succeeded = document.execCommand(this.getAction());
         } catch (err) {
             succeeded = false;
         }
@@ -491,14 +492,14 @@ var ClipboardAction = (function () {
     ClipboardAction.prototype.handleResult = function handleResult(succeeded) {
         if (succeeded) {
             this.emitter.emit('success', {
-                action: this.action,
+                action: this.getAction(),
                 text: this.selectedText,
                 trigger: this.trigger,
                 clearSelection: this.clearSelection.bind(this)
             });
         } else {
             this.emitter.emit('error', {
-                action: this.action,
+                action: this.getAction(),
                 trigger: this.trigger,
                 clearSelection: this.clearSelection.bind(this)
             });
@@ -510,8 +511,8 @@ var ClipboardAction = (function () {
      */
 
     ClipboardAction.prototype.clearSelection = function clearSelection() {
-        if (this.target) {
-            this.target.blur();
+        if (this.getTarget()) {
+            this.getTarget().blur();
         }
 
         window.getSelection().removeAllRanges();
@@ -521,6 +522,50 @@ var ClipboardAction = (function () {
      * Sets the `action` to be performed which can be either 'copy' or 'cut'.
      * @param {String} action
      */
+
+    ClipboardAction.prototype.setAction = function setAction() {
+        var action = arguments.length <= 0 || arguments[0] === undefined ? 'copy' : arguments[0];
+
+        this._action = action;
+
+        if (this._action !== 'copy' && this._action !== 'cut') {
+            throw new Error('Invalid "action" value, use either "copy" or "cut"');
+        }
+    };
+
+    /**
+     * Gets the `action` property.
+     * @return {String}
+     */
+
+    ClipboardAction.prototype.getAction = function getAction() {
+        return this._action;
+    };
+
+    /**
+     * Sets the `target` property using an element
+     * that will be have its content copied.
+     * @param {Element} target
+     */
+
+    ClipboardAction.prototype.setTarget = function setTarget(target) {
+        if (target !== undefined) {
+            if (target && typeof target === 'object' && target.nodeType === 1) {
+                this._target = target;
+            } else {
+                throw new Error('Invalid "target" value, use a valid Element');
+            }
+        }
+    };
+
+    /**
+     * Gets the `target` property.
+     * @return {String|HTMLElement}
+     */
+
+    ClipboardAction.prototype.getTarget = function getTarget() {
+        return this._target;
+    };
 
     /**
      * Destroy lifecycle.
@@ -532,47 +577,19 @@ var ClipboardAction = (function () {
 
     _createClass(ClipboardAction, [{
         key: 'action',
-        set: function set() {
-            var action = arguments.length <= 0 || arguments[0] === undefined ? 'copy' : arguments[0];
-
-            this._action = action;
-
-            if (this._action !== 'copy' && this._action !== 'cut') {
-                throw new Error('Invalid "action" value, use either "copy" or "cut"');
-            }
+        set: function set(action) {
+            this.setAction(action);
         },
-
-        /**
-         * Gets the `action` property.
-         * @return {String}
-         */
         get: function get() {
-            return this._action;
+            return this.getAction();
         }
-
-        /**
-         * Sets the `target` property using an element
-         * that will be have its content copied.
-         * @param {Element} target
-         */
     }, {
         key: 'target',
         set: function set(target) {
-            if (target !== undefined) {
-                if (target && typeof target === 'object' && target.nodeType === 1) {
-                    this._target = target;
-                } else {
-                    throw new Error('Invalid "target" value, use a valid Element');
-                }
-            }
+            this.setTarget(target);
         },
-
-        /**
-         * Gets the `target` property.
-         * @return {String|HTMLElement}
-         */
         get: function get() {
-            return this._target;
+            return this.getTarget();
         }
     }]);
 
@@ -728,6 +745,7 @@ var Clipboard = (function (_Emitter) {
     return Clipboard;
 })(_tinyEmitter2['default']);
 
+exports['default'] = Clipboard;
 function getAttributeValue(suffix, element) {
     var attribute = 'data-clipboard-' + suffix;
 
@@ -737,8 +755,6 @@ function getAttributeValue(suffix, element) {
 
     return element.getAttribute(attribute);
 }
-
-exports['default'] = Clipboard;
 module.exports = exports['default'];
 
 },{"./clipboard-action":8,"good-listener":5,"tiny-emitter":7}]},{},[9])(9)
