@@ -154,8 +154,6 @@ export default class ClipboardAction {
         }
     }
 
-    set action(action) { this.setAction(action) }
-
     /**
      * Gets the `action` property.
      * @return {String}
@@ -163,8 +161,6 @@ export default class ClipboardAction {
     getAction() {
         return this._action;
     }
-
-    get action() { return this.getAction() }
 
     /**
      * Sets the `target` property using an element
@@ -182,8 +178,6 @@ export default class ClipboardAction {
         }
     }
 
-    set target(target) { this.setTarget(target) }
-
     /**
      * Gets the `target` property.
      * @return {String|HTMLElement}
@@ -191,8 +185,6 @@ export default class ClipboardAction {
     getTarget() {
         return this._target;
     }
-
-    get target() { return this.getTarget() }
 
     /**
      * Destroy lifecycle.

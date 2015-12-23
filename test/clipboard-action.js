@@ -25,9 +25,11 @@ describe('ClipboardAction', () => {
                 text: 'foo'
             });
 
-            assert.property(clip, 'action');
+            assert.property(clip, 'getAction');
+            assert.property(clip, 'setAction');
             assert.property(clip, 'emitter');
-            assert.property(clip, 'target');
+            assert.property(clip, 'getTarget');
+            assert.property(clip, 'setTarget');
             assert.property(clip, 'text');
             assert.property(clip, 'trigger');
             assert.property(clip, 'selectedText');
@@ -119,7 +121,7 @@ describe('ClipboardAction', () => {
                 target: document.querySelector('#input')
             });
 
-            assert.equal(clip.selectedText, clip.target.value);
+            assert.equal(clip.selectedText, clip.getTarget().value);
         });
 
         it('should select text from non-editable element', () => {
@@ -128,7 +130,7 @@ describe('ClipboardAction', () => {
                 target: document.querySelector('#paragraph')
             });
 
-            assert.equal(clip.selectedText, clip.target.textContent);
+            assert.equal(clip.selectedText, clip.getTarget().textContent);
         });
     });
 
